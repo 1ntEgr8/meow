@@ -21,7 +21,7 @@ let () =
       let (expr, _ty) =
         Gradualmeow.Parser.main Gradualmeow.Lexer.token lexbuf
       in
-      let ty' = Gradualmeow.Typing.tysynth expr (Hashtbl.create 10) in
-      printf "%s" (Gradualmeow.Expr.string_of_ty ty')
+      let ty' = Gradualmeow.typeof expr in
+      printf "%s" (Gradualmeow.Types.string_of_ty ty')
     ) !input_files
   )
