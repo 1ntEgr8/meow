@@ -7,4 +7,4 @@ let hello () = print_endline "hi there"
 
 let typeof expr =
   let expr' = Input.lower expr in
-  Typing.tysynth expr' Context.empty
+  Expr.Typing.typeof expr' Context.empty
