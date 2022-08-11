@@ -1,0 +1,6 @@
+(library
+ (name gradualmeow))
+
+(ocamllex lexer)
+(menhir
+  (modules parser))
