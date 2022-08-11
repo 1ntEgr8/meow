@@ -1,4 +1,7 @@
-type t = CInt of int | CBool of bool
+type t =
+  | CInt of int
+  | CBool of bool
+  | CSucc
 
 let string_of_const c =
   match c with
@@ -6,3 +9,4 @@ let string_of_const c =
       string_of_int i
   | CBool b ->
       if b then "true" else "false"
+  | CSucc -> "succ"

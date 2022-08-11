@@ -12,6 +12,7 @@
 %token ASSIGN
 %token TYINT
 %token TYBOOL
+%token SUCC
 %token <string> VAR
 %token <int> INT
 %token EOF
@@ -31,6 +32,8 @@ expr:
     { Input.IConst (Constant.CBool true) }
   | FALSE
     { Input.IConst (Constant.CBool false) }
+  | SUCC
+    { Input.IConst (Constant.CSucc) }
   | x = VAR
     { Input.IVar x }
   | LPAREN FUN x = VAR COLON binder_ty = ty DOT body = expr RPAREN

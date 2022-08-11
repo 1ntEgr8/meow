@@ -19,6 +19,7 @@ rule token = parse
   | "int" { TYINT }
   | "bool" { TYBOOL }
   | "ref" { REF }
+  | "succ" { SUCC }
   | '!' { BANG }
   | '(' { LPAREN }
   | ')' { RPAREN }

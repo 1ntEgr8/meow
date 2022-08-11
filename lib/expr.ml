@@ -29,9 +29,7 @@ let rec string_of_expr expr =
 and string_of_lambda (x, ty) body =
   sprintf "( fun %s : %s . %s )" x (Types.string_of_ty ty) (string_of_expr body)
 
-module Typing :
-  Typing.Checker with type t = expr with type context = Types.t Context.t =
-struct
+module Tc = struct
   open Types
 
   type t = expr
@@ -53,8 +51,7 @@ struct
       match expr with
       | EVar x ->
           Context.lookup ctxt x
-      | EConst c -> (
-        match c with CInt _ -> TGround TInt | CBool _ -> TGround TBool )
+      | EConst c -> Types.typeof_constant c
       | ELambda ((x, ty), body) ->
           let ctxt' = Context.extend ctxt {name= x; scope} ty in
           let ty' = helper body ctxt' (scope + 1) in
@@ -93,3 +90,59 @@ struct
     in
     helper expr ctxt 0
 end
+
+(** Lowers Expr.expr to (Cast.expr * Types.t) *)
+let lower expr =
+  let rec helper expr ctxt scope =
+    match expr with
+    | EVar x ->
+        (Cast.CVar x, Tc.typeof expr ctxt)
+    | EConst c ->
+        (Cast.CConst c, Tc.typeof expr ctxt)
+    | ELambda ((x, ty), body) ->
+        let ctxt' = Context.extend ctxt {name= x; scope} ty in
+        let body', ty' = helper body ctxt' (scope + 1) in
+        (Cast.CLambda ((x, ty), body'), TArrow (ty, ty'))
+    | EApp (e1, e2) -> (
+        let e1', e1'_ty = helper e1 ctxt scope in
+        let e2', e2'_ty = helper e2 ctxt scope in
+        match e1'_ty with
+        | TUnknown ->
+            ( Cast.CApp (Cast.CCast (TArrow (e2'_ty, TUnknown), e1'), e2')
+            , TUnknown )
+        | TArrow (ty, ty') ->
+            if e2'_ty <> ty then
+              if Types.consistent e2'_ty ty then
+                (Cast.CApp (e1', Cast.CCast (ty, e2')), ty')
+              else failwith "Expected types to be consistent"
+            else (Cast.CApp (e1', e2'), ty')
+        | _ ->
+            failwith "Expected either unknown or arrow type" )
+    | ERef e ->
+        let e', ty = helper e ctxt scope in
+        (Cast.CRef e', TRef ty)
+    | EDeref e -> (
+        let e', ty = helper e ctxt scope in
+        match ty with
+        | TUnknown ->
+            (Cast.CDeref (Cast.CCast (TRef TUnknown, e')), TUnknown)
+        | TRef ty' ->
+            (Cast.CDeref e', ty')
+        | _ ->
+            failwith "Expected unknown or ref type" )
+    | EAssign (e1, e2) -> (
+        let e1', e1'_ty = helper e1 ctxt scope in
+        let e2', e2'_ty = helper e2 ctxt scope in
+        match e1'_ty with
+        | TUnknown ->
+            (Cast.CAssign (Cast.CCast (TRef e2'_ty, e1'), e2'), TRef e2'_ty)
+        | TRef ty ->
+            if e2'_ty <> ty then
+              if Types.consistent e2'_ty ty then
+                (Cast.CAssign (e1', Cast.CCast (ty, e2')), TRef ty)
+              else failwith "Expected types to be consistent"
+            else (Cast.CAssign (e1', e2'), TRef ty)
+        | _ ->
+            failwith "Expected either unknown or ref type" )
+  in
+  helper expr Context.empty 0
