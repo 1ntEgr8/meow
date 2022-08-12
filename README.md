@@ -6,7 +6,7 @@ I started writing this on [Internation Cat Day](https://en.wikipedia.org/wiki/In
 
 Some meow-difications from the paper:
 - "meow", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾" are aliases for the `?` type
-- "meow", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾" are also commands! It prints out a random cat emoji ;)
+- "meow", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾" are also commands! They print out a random cat emoji ;)
 
 You will need [sedlex](https://github.com/ocaml-community/sedlex/) and [menhirLib](https://gitlab.inria.fr/fpottier/menhir/) to build the project (in addition to the OCaml toolchain of course, >= 14.4.0).
 
