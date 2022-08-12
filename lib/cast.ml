@@ -1,4 +1,5 @@
 open Printf
+open Context
 
 type expr =
   | CVar of Ident.t
@@ -9,6 +10,7 @@ type expr =
   | CDeref of expr
   | CAssign of expr * expr
   | CCast of Types.t * expr
+  | CLoc of Store.location
 
 let rec string_of_expr expr =
   match expr with
@@ -28,6 +30,8 @@ let rec string_of_expr expr =
       sprintf "( %s <- %s )" (string_of_expr e1) (string_of_expr e2)
   | CCast (ty, e) ->
       sprintf "( <%s> %s )" (Types.string_of_ty ty) (string_of_expr e)
+  | CLoc loc ->
+      sprintf "loc:%s" (Store.string_of_loc loc)
 
 and string_of_lambda (x, ty) body =
   sprintf "( fun %s : %s . %s )" x (Types.string_of_ty ty) (string_of_expr body)
@@ -35,51 +39,49 @@ and string_of_lambda (x, ty) body =
 module Tc = struct
   type t = expr
 
-  type context = Types.t Context.t
+  type context = Types.t TypingContext.t
 
   let typeof expr ctxt =
-    let rec helper expr ctxt scope =
+    let rec helper expr ctxt =
       match expr with
-      | CVar x -> Context.lookup ctxt x
-      | CConst c -> Types.typeof_constant c
+      | CVar x ->
+          TypingContext.lookup ctxt x.name
+      | CConst c ->
+          Types.typeof_constant c
       | CLambda ((x, ty), body) ->
-          let ctxt' = Context.extend ctxt { name = x; scope = scope } ty in
-          let ty' = helper body ctxt' (scope + 1) in
+          let ctxt' = TypingContext.extend ctxt x ty in
+          let ty' = helper body ctxt' in
           TArrow (ty, ty')
-      | CApp (e1, e2) ->
-          let e1_ty = helper e1 ctxt scope in
-          let e2_ty = helper e2 ctxt scope in
-          (match e1_ty with
+      | CApp (e1, e2) -> (
+          let e1_ty = helper e1 ctxt in
+          let e2_ty = helper e2 ctxt in
+          match e1_ty with
           | TArrow (ty, ty') ->
-              if e2_ty = ty then
-                ty'
-              else
-                failwith "type mismatch"
-          | _ -> failwith "expected arrow type" )
+              if e2_ty = ty then ty' else failwith "type mismatch"
+          | _ ->
+              failwith "expected arrow type" )
       | CCast (ty, e) ->
-            let sigma = helper e ctxt scope in
-            if Types.consistent sigma ty then
-              ty
-            else
-              failwith "expected types to be consistent"
-        | CRef e ->
-            let ty = helper e ctxt scope in
-            TRef ty
-        | CDeref e ->
-            let ty = helper e ctxt scope in
-            (match ty with
-            | TRef ty' -> ty'
-            | _ -> failwith "expected ref type" )
-        | CAssign (e1, e2) ->
-            let e1_ty = helper e1 ctxt scope in
-            let e2_ty = helper e2 ctxt scope in
-            (match e1_ty with
-            | TRef ty' ->
-                if ty' = e2_ty then
-                  e1_ty
-                else
-                  failwith "type mismatch"
-            | _ -> failwith "expected ref type" )
+          let sigma = helper e ctxt in
+          if Types.consistent sigma ty then ty
+          else failwith "expected types to be consistent"
+      | CRef e ->
+          let ty = helper e ctxt in
+          TRef ty
+      | CDeref e -> (
+          let ty = helper e ctxt in
+          match ty with TRef ty' -> ty' | _ -> failwith "expected ref type" )
+      | CAssign (e1, e2) -> (
+          let e1_ty = helper e1 ctxt in
+          let e2_ty = helper e2 ctxt in
+          match e1_ty with
+          | TRef ty' ->
+              if ty' = e2_ty then e1_ty else failwith "type mismatch"
+          | _ ->
+              failwith "expected ref type" )
+      | _ ->
+          failwith
+            "CLoc appeared during type-checking! Values of type CLoc can only \
+             be produced at run-time."
     in
-      helper expr ctxt 0
+    helper expr ctxt
 end

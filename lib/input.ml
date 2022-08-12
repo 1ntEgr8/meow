@@ -11,24 +11,27 @@ type expr =
   | IDeref of expr
   | IAssign of expr * expr
 
+module NameContext = Context.Make (Utils.StringEq)
+
 (** Lowers Input.expr to the Expr.expr *)
 let lower expr =
-  let rec helper expr ctxt depth =
+  let rec helper expr ctxt =
     match expr with
     | IVar x ->
-        EVar (Context.index ctxt x)
+        let idx = NameContext.index ctxt x in
+        EVar {name= x; scope= idx}
     | ILambda ((x, ty), body) ->
-        let ctxt' = Context.extend ctxt {name= x; scope= depth} () in
-        ELambda ((x, ty), helper body ctxt' (depth + 1))
+        let ctxt' = NameContext.extend ctxt x () in
+        ELambda ((x, ty), helper body ctxt')
     | IConst c ->
         EConst c
     | IApp (e1, e2) ->
-        EApp (helper e1 ctxt depth, helper e2 ctxt depth)
+        EApp (helper e1 ctxt, helper e2 ctxt)
     | IRef e ->
-        ERef (helper e ctxt depth)
+        ERef (helper e ctxt)
     | IDeref e ->
-        EDeref (helper e ctxt depth)
+        EDeref (helper e ctxt)
     | IAssign (e1, e2) ->
-        EAssign (helper e1 ctxt depth, helper e2 ctxt depth)
+        EAssign (helper e1 ctxt, helper e2 ctxt)
   in
-  helper expr Context.empty 0
+  helper expr NameContext.empty

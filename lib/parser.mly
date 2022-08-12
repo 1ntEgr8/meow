@@ -52,6 +52,8 @@ ty:
     { Types.TGround Types.TInt }
   | TYBOOL
     { Types.TGround Types.TBool }
+  | REF t = ty
+    { Types.TRef t }
   | UNKNOWN
     { Types.TUnknown }
   | LPAREN t1 = ty ARROW t2 = ty RPAREN

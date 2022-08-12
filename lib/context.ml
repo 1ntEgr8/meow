@@ -1,29 +1,40 @@
-(*
-- compile
-- typing
-  - typing.mli
-  - implement for expr
-  - implement for cast
-- interpret
-  - implement for cast
-*)
+module type T = sig
+  type key
 
-(* Associative list mapping idents to elements *)
-type 'a t = (Ident.t * 'a) list
+  type 'a t
 
-let empty = []
+  val empty : 'a t
 
-exception IdentNotFound
+  val index : 'a t -> key -> int
 
-let rec index (ctxt : 'a t) ident_name =
-  match ctxt with
-  | hd :: tl ->
-      let key = fst hd in
-      if key.name = ident_name then key else index tl ident_name
-  | [] ->
-      raise IdentNotFound
+  val extend : 'a t -> key -> 'a -> 'a t
 
-let extend ctxt ident v = (ident, v) :: ctxt
+  val lookup : 'a t -> key -> 'a
+end
 
-(* NB: Bad time complexity, but its a prototype so don't care ;) *)
-let lookup ctxt ident = snd (List.find (fun el -> fst el = ident) ctxt)
+module Make (C : Utils.Eq) : T with type key = C.t = struct
+  type key = C.t
+
+  type 'a t = (key * 'a) list
+
+  let empty = []
+
+  exception KeyNotFound
+
+  let index ctxt k =
+    let rec helper ctxt i =
+      match ctxt with
+      | (k', _) :: tl ->
+          if C.equals k k' then i else helper tl (i + 1)
+      | [] ->
+          raise KeyNotFound
+    in
+    helper ctxt 0
+
+  let extend ctxt k v = (k, v) :: ctxt
+
+  (* NB: Bad time complexity, but its a prototype so don't care ;) *)
+  let lookup ctxt k = snd (List.find (fun el -> C.equals (fst el) k) ctxt)
+end
+
+module TypingContext = Make (Utils.StringEq)

@@ -28,6 +28,9 @@ let rec consistent t1 t2 =
 
 let typeof_constant c =
   match c with
-  | Constant.CInt _ -> TGround TInt
-  | Constant.CBool _ -> TGround TBool
-  | Constant.CSucc -> TArrow (TGround TInt, TGround TInt)
+  | Constant.CInt _ ->
+      TGround TInt
+  | Constant.CBool _ ->
+      TGround TBool
+  | Constant.CSucc ->
+      TArrow (TGround TInt, TGround TInt)

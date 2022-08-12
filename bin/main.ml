@@ -22,10 +22,11 @@ let () =
         let expr, _ty =
           Gradualmeow.Parser.main Gradualmeow.Lexer.token lexbuf
         in
-        let (compiled, ty') = 
-          Gradualmeow.Input.lower expr
-          |> Gradualmeow.Expr.lower
+        let compiled, ty' =
+          Gradualmeow.Input.lower expr |> Gradualmeow.Expr.lower
         in
-        printf "%s\n" (Gradualmeow.Cast.string_of_expr compiled);
-        printf "%s\n" (Gradualmeow.Types.string_of_ty ty') )
+        printf "%s\n" (Gradualmeow.Cast.string_of_expr compiled) ;
+        printf "%s\n" (Gradualmeow.Types.string_of_ty ty') ;
+        let result = Gradualmeow.Eval.eval compiled in
+        printf "%s\n" (Gradualmeow.Cast.string_of_expr result) )
       !input_files
