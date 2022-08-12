@@ -4,7 +4,13 @@ let usage_msg = "gdmeow <file> [<file>] ..."
 
 let input_files = ref []
 
-let speclist = []
+let dump_cast = ref false
+
+let typecheck = ref false
+
+let speclist =
+  [ ("-dump-cast", Arg.Set dump_cast, "Dump Cast AST")
+  ; ("-typecheck", Arg.Set typecheck, "Only run typechecker") ]
 
 let anon_fun filename = input_files := filename :: !input_files
 
@@ -18,15 +24,10 @@ let () =
     List.iter
       (fun file ->
         let fd = open_in file in
-        let lexbuf = Lexing.from_channel fd in
-        let expr, _ty =
-          Gradualmeow.Parser.main Gradualmeow.Lexer.token lexbuf
+        let cmd =
+          if !dump_cast then `DumpCast
+          else if !typecheck then `Typecheck
+          else `Eval
         in
-        let compiled, ty' =
-          Gradualmeow.Input.lower expr |> Gradualmeow.Expr.lower
-        in
-        printf "%s\n" (Gradualmeow.Cast.string_of_expr compiled) ;
-        printf "%s\n" (Gradualmeow.Types.string_of_ty ty') ;
-        let result = Gradualmeow.Eval.eval compiled in
-        printf "%s\n" (Gradualmeow.Cast.string_of_expr result) )
+        Meow.meow_from_fd cmd fd )
       !input_files

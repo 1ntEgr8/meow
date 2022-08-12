@@ -3,4 +3,4 @@
 
 (generate_opam_files true)
 (package
-  (name gradualmeow))
+  (name meow))

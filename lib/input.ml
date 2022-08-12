@@ -22,11 +22,7 @@ let lower expr =
         EVar {name= x; scope= idx}
     | ILambda ((x, ty), body) ->
         let ctxt' = NameContext.extend ctxt x () in
-        let ty =
-          (match ty with
-          | Some ty -> ty
-          | None -> TUnknown)
-        in
+        let ty = match ty with Some ty -> ty | None -> TUnknown in
         ELambda ((x, ty), helper body ctxt')
     | IConst c ->
         EConst c
