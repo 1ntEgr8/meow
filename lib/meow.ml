@@ -44,14 +44,16 @@ let meow cmd program =
           (Fmt.Types.string_of_ty ty') ;
         raise (Eval.EvalError Eval.TypeError) )
 
-let parse_prog lexbuf = Parser.main Lexer.token lexbuf
+let parser = MenhirLib.Convert.Simplified.traditional2revised Parser.main
 
 let meow_from_string cmd s =
-  let lexbuf = Lexing.from_string s in
-  let program = parse_prog lexbuf in
+  let lexbuf = Sedlexing.Utf8.from_string s in
+  let lexer = Sedlexing.with_tokenizer Lexer.token lexbuf in
+  let program = parser lexer in
   meow cmd program
 
 let meow_from_fd cmd chan =
-  let lexbuf = Lexing.from_channel chan in
-  let program = parse_prog lexbuf in
+  let lexbuf = Sedlexing.Utf8.from_channel chan in
+  let lexer = Sedlexing.with_tokenizer Lexer.token lexbuf in
+  let program = parser lexer in
   meow cmd program

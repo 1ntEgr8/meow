@@ -1,7 +1,8 @@
 (library
- (name meow))
-
-(ocamllex lexer)
+ (name meow)
+ (libraries sedlex menhirLib)
+ (preprocess
+   (pps sedlex.ppx)))
 
 (menhir
  (modules parser)
