@@ -1,6 +1,6 @@
 open Printf
 
-let usage_msg = "gdmeow <file> [<file>] ..."
+let usage_msg = "meow <file> [<file>] ..."
 
 let input_files = ref []
 
