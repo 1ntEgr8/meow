@@ -9,8 +9,8 @@ let dump_cast = ref false
 let typecheck = ref false
 
 let speclist =
-  [ ("-dump-cast", Arg.Set dump_cast, "Dump Cast AST")
-  ; ("-typecheck", Arg.Set typecheck, "Only run typechecker") ]
+  [ ("--dump-cast", Arg.Set dump_cast, "Dump Cast AST")
+  ; ("--typecheck", Arg.Set typecheck, "Only run typechecker") ]
 
 let anon_fun filename = input_files := filename :: !input_files
 

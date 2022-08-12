@@ -1,4 +1,3 @@
-open Printf
 open Context
 
 type expr =
@@ -11,30 +10,6 @@ type expr =
   | CAssign of expr * expr
   | CCast of Types.t * expr
   | CLoc of Store.location
-
-let rec string_of_expr expr =
-  match expr with
-  | CVar x ->
-      sprintf "%s" x.name
-  | CConst c ->
-      Constant.string_of_const c
-  | CLambda (binder, body) ->
-      string_of_lambda binder body
-  | CApp (e1, e2) ->
-      sprintf "( %s %s )" (string_of_expr e1) (string_of_expr e2)
-  | CRef e ->
-      sprintf "ref %s" (string_of_expr e)
-  | CDeref e ->
-      sprintf "!%s" (string_of_expr e)
-  | CAssign (e1, e2) ->
-      sprintf "( %s <- %s )" (string_of_expr e1) (string_of_expr e2)
-  | CCast (ty, e) ->
-      sprintf "( <%s> %s )" (Types.string_of_ty ty) (string_of_expr e)
-  | CLoc loc ->
-      sprintf "loc:%s" (Store.string_of_loc loc)
-
-and string_of_lambda (x, ty) body =
-  sprintf "( fun %s : %s . %s )" x (Types.string_of_ty ty) (string_of_expr body)
 
 module Tc = struct
   type t = expr

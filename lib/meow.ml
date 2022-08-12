@@ -10,23 +10,26 @@ let meow cmd program =
   let string_of_opt_ty ty =
     match ty with
     | Some ty ->
-        Types.string_of_ty ty
+        Fmt.Types.string_of_ty ty
     | None ->
-        Types.string_of_ty Types.TUnknown
+        Fmt.Types.string_of_ty Types.TUnknown
   in
   match cmd with
   | `DumpCast ->
       let expr', ty' = Input.lower expr |> Expr.lower in
-      printf "%s : %s\n" (Cast.string_of_expr expr') (Types.string_of_ty ty')
+      printf "%s : %s\n"
+        (Fmt.Cast.string_of_expr expr')
+        (Fmt.Types.string_of_ty ty')
   | `Typecheck -> (
       let expr' = Input.lower expr in
       let ty' = Expr.Tc.typeof expr' Context.TypingContext.empty in
       match ty with
       | Some ty ->
-          if Types.consistent ty ty' then printf "%s\n" (Types.string_of_ty ty')
+          if Types.consistent ty ty' then
+            printf "%s\n" (Fmt.Types.string_of_ty ty')
           else raise (Eval.EvalError Eval.TypeError)
       | None ->
-          printf "%s\n" (Types.string_of_ty ty') )
+          printf "%s\n" (Fmt.Types.string_of_ty ty') )
   | `Eval ->
       let expr', ty' = Input.lower expr |> Expr.lower in
       let typechecks =
@@ -34,10 +37,11 @@ let meow cmd program =
       in
       if typechecks then
         let result = Eval.eval expr' in
-        printf "%s\n" (Cast.string_of_expr result)
+        printf "%s\n" (Fmt.Cast.string_of_expr result)
       else (
         printf "User-provided type '%s' doesn't match program type '%s'\n"
-          (string_of_opt_ty ty) (Types.string_of_ty ty') ;
+          (string_of_opt_ty ty)
+          (Fmt.Types.string_of_ty ty') ;
         raise (Eval.EvalError Eval.TypeError) )
 
 let parse_prog lexbuf = Parser.main Lexer.token lexbuf
