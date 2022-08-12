@@ -35,6 +35,7 @@ module Types = struct
     | TRef t ->
         pp_open_hovbox ppf indentation ;
         kwd ppf "ref" ;
+        space ppf ;
         pr_ty ppf t ;
         pp_close_box ppf ()
 

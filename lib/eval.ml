@@ -6,9 +6,6 @@ exception EvalError of err
 
 type boxed_value = expr * Types.t
 
-let cats =
-  ["😺"; "😸"; "😹"; "😻"; "😼"; "😽"; "🙀"; "😿"; "😾"]
-
 let builtins =
   let tbl = Hashtbl.create 10 in
   Hashtbl.add tbl Constant.CSucc (fun e ->
@@ -17,7 +14,6 @@ let builtins =
           CConst (Constant.CInt (i + 1))
       | _ ->
           failwith "bad argument" ) ;
-  Hashtbl.add tbl Constant.CMeow (fun e -> e) ;
   tbl
 
 (** n-place shift of an expression expr above cutoff c *)
@@ -62,6 +58,9 @@ let rec subst expr (x : Ident.t) y =
 
 let unbox expr = match expr with CCast (_, expr) -> expr | _ -> expr
 
+let cats =
+  ["😺"; "😸"; "😹"; "😻"; "😼"; "😽"; "🙀"; "😿"; "😾"]
+
 let eval expr =
   let rec helper expr store =
     match expr with
@@ -75,7 +74,7 @@ let eval expr =
     | CCast (ty, e) -> (
         let v = unbox (helper e store) in
         (* TODO instead of invoking type checker, tag the AST with types *)
-        let ty' = Tc.typeof v Context.TypingContext.empty in
+        let ty' = Tc.typeof v Context.TypingContext.empty store in
         match ty with
         | TGround _ ->
             if ty = ty' then v else raise (EvalError CastError)
@@ -130,4 +129,5 @@ let eval expr =
     | _ ->
         failwith "unimplemented"
   in
+  Random.self_init () ; (* For random cat printing ;) *)
   helper expr (Store.empty ())

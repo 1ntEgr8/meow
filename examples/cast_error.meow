@@ -1,0 +1,1 @@
+(fun x. succ x) true

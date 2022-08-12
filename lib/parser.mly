@@ -18,11 +18,13 @@
 %token <int> INT
 %token EOF
 
-%nonassoc SUCC INT VAR LPAREN TRUE FALSE
+%nonassoc INT VAR LPAREN TRUE FALSE
 %left ARROW
 %left ASSIGN
 %left BANG
 %left REF
+%left MEOW
+%left SUCC
 %left APP
 
 %start <Input.expr * (Types.t option)> main

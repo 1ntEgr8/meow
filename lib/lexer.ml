@@ -20,15 +20,16 @@ let int = [%sedlex.regexp? Plus digit]
 let cats =
   [%sedlex.regexp?
     ( "meow"
-    | "😺"
-    | "😸"
-    | "😹"
-    | "😻"
-    | "😼"
-    | "😽"
-    | "🙀"
-    | "😿"
-    | "😾" )]
+    | 0x1F638 (* 😸 *)
+    | 0x1F639 (* 😹 *)
+    | 0x1F63A (* 😺 *)
+    | 0x1F63B (* 😻 *)
+    | 0x1F63C (* 😼 *)
+    | 0x1F63D (* 😽 *)
+    | 0x1F63E (* 😾 *)
+    | 0x1F63F (* 😿 *)
+    | 0x1F640 (* 🙀 *)
+  )]
 
 let rec token lexbuf =
   match%sedlex lexbuf with
@@ -67,12 +68,13 @@ let rec token lexbuf =
   | "->" ->
       ARROW
   | int ->
-      INT (int_of_string (Sedlexing.Latin1.lexeme lexbuf))
+      INT (int_of_string (Sedlexing.Utf8.lexeme lexbuf))
   | cats ->
       MEOW
   | var ->
-      VAR (Sedlexing.Latin1.lexeme lexbuf)
+      VAR (Sedlexing.Utf8.lexeme lexbuf)
   | eof ->
       EOF
   | _ ->
+      Printf.printf "%s\n" (Sedlexing.Utf8.lexeme lexbuf) ;
       assert false

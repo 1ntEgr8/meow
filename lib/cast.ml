@@ -16,8 +16,8 @@ module Tc = struct
 
   type context = Types.t TypingContext.t
 
-  let typeof expr ctxt =
-    let rec helper expr ctxt =
+  let typeof expr ctxt store =
+    let rec helper expr ctxt store =
       match expr with
       | CVar x ->
           TypingContext.lookup ctxt x.name
@@ -25,38 +25,38 @@ module Tc = struct
           Types.typeof_constant c
       | CLambda ((x, ty), body) ->
           let ctxt' = TypingContext.extend ctxt x ty in
-          let ty' = helper body ctxt' in
+          let ty' = helper body ctxt' store in
           TArrow (ty, ty')
       | CApp (e1, e2) -> (
-          let e1_ty = helper e1 ctxt in
-          let e2_ty = helper e2 ctxt in
+          let e1_ty = helper e1 ctxt store in
+          let e2_ty = helper e2 ctxt store in
           match e1_ty with
           | TArrow (ty, ty') ->
               if e2_ty = ty then ty' else failwith "type mismatch"
           | _ ->
               failwith "expected arrow type" )
       | CCast (ty, e) ->
-          let sigma = helper e ctxt in
+          let sigma = helper e ctxt store in
           if Types.consistent sigma ty then ty
           else failwith "expected types to be consistent"
       | CRef e ->
-          let ty = helper e ctxt in
+          let ty = helper e ctxt store in
           TRef ty
       | CDeref e -> (
-          let ty = helper e ctxt in
+          let ty = helper e ctxt store in
           match ty with TRef ty' -> ty' | _ -> failwith "expected ref type" )
       | CAssign (e1, e2) -> (
-          let e1_ty = helper e1 ctxt in
-          let e2_ty = helper e2 ctxt in
+          let e1_ty = helper e1 ctxt store in
+          let e2_ty = helper e2 ctxt store in
           match e1_ty with
           | TRef ty' ->
               if ty' = e2_ty then e1_ty else failwith "type mismatch"
           | _ ->
               failwith "expected ref type" )
-      | _ ->
-          failwith
-            "CLoc appeared during type-checking! Values of type CLoc can only \
-             be produced at run-time."
+      | CLoc l -> (
+        let e = Store.find store l in
+        let ty = helper e ctxt store in
+        TRef ty )
     in
-    helper expr ctxt
+    helper expr ctxt store
 end
