@@ -5,7 +5,7 @@ open Expr
 type expr =
   | IVar of string
   | IConst of Constant.t
-  | ILambda of (string * Types.t) * expr
+  | ILambda of (string * Types.t option) * expr
   | IApp of expr * expr
   | IRef of expr
   | IDeref of expr
@@ -22,6 +22,11 @@ let lower expr =
         EVar {name= x; scope= idx}
     | ILambda ((x, ty), body) ->
         let ctxt' = NameContext.extend ctxt x () in
+        let ty =
+          (match ty with
+          | Some ty -> ty
+          | None -> TUnknown)
+        in
         ELambda ((x, ty), helper body ctxt')
     | IConst c ->
         EConst c

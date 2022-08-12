@@ -17,13 +17,22 @@
 %token <int> INT
 %token EOF
 
-%start <Input.expr * Types.t> main
+%nonassoc SUCC INT VAR LPAREN TRUE FALSE
+%left ARROW
+%left ASSIGN
+%left BANG
+%left REF
+%left APP
+
+%start <Input.expr * (Types.t option)> main
 
 %%
 
 main:
-  e = expr COLON t = ty EOF
-  { (e, t) }
+  | e = expr COLON t = ty EOF
+    { (e, Some t) }
+  | e = expr EOF
+    { (e, None) }
 
 expr:
   | i = INT
@@ -37,15 +46,19 @@ expr:
   | x = VAR
     { Input.IVar x }
   | LPAREN FUN x = VAR COLON binder_ty = ty DOT body = expr RPAREN
-    { Input.ILambda ((x, binder_ty), body) }
-  | LPAREN e1 = expr e2 = expr RPAREN
-    { Input.IApp (e1, e2) }
+    { Input.ILambda ((x, Some binder_ty), body) }
+  | LPAREN FUN x = VAR DOT body = expr RPAREN
+    { Input.ILambda ((x, None), body) }
+  | e1 = expr e2 = expr
+    { Input.IApp (e1, e2) } %prec APP
   | REF e = expr
     { Input.IRef e }
   | BANG e = expr
     { Input.IDeref e }
-  | LPAREN e1 = expr ASSIGN e2 = expr RPAREN
+  | e1 = expr ASSIGN e2 = expr
     { Input.IAssign (e1, e2) }
+  | LPAREN e = expr RPAREN
+    { e }
 
 ty:
   | TYINT
@@ -56,5 +69,7 @@ ty:
     { Types.TRef t }
   | UNKNOWN
     { Types.TUnknown }
-  | LPAREN t1 = ty ARROW t2 = ty RPAREN
+  | t1 = ty ARROW t2 = ty
     { Types.TArrow (t1, t2) }
+  | LPAREN t = ty RPAREN
+    { t }
