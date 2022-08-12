@@ -2,7 +2,7 @@
  (name meow)
  (libraries sedlex menhirLib)
  (preprocess
-   (pps sedlex.ppx)))
+  (pps sedlex.ppx)))
 
 (menhir
  (modules parser)

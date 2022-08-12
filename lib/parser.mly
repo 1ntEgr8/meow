@@ -1,3 +1,4 @@
+%token MEOW
 %token TRUE
 %token FALSE
 %token FUN
@@ -43,6 +44,8 @@ expr:
     { Input.IConst (Constant.CBool false) }
   | SUCC
     { Input.IConst (Constant.CSucc) }
+  | MEOW
+    { Input.IConst (Constant.CMeow) }
   | x = VAR
     { Input.IVar x }
   | LPAREN FUN x = VAR COLON binder_ty = ty DOT body = expr RPAREN
@@ -67,7 +70,7 @@ ty:
     { Types.TGround Types.TBool }
   | REF t = ty
     { Types.TRef t }
-  | UNKNOWN
+  | UNKNOWN | MEOW
     { Types.TUnknown }
   | t1 = ty ARROW t2 = ty
     { Types.TArrow (t1, t2) }

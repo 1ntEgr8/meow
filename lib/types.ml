@@ -19,3 +19,5 @@ let typeof_constant c =
       TGround TBool
   | Constant.CSucc ->
       TArrow (TGround TInt, TGround TInt)
+  | Constant.CMeow ->
+      TUnknown

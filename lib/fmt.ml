@@ -54,6 +54,8 @@ module Constant = struct
         fprintf ppf "%b" b
     | CSucc ->
         kwd ppf "succ"
+    | CMeow ->
+        kwd ppf "😺😸😹😻😼😽🙀😿😾 meeoooow"
 
   let string_of_constant = str_fmt pr_const
 end
