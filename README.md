@@ -2,7 +2,7 @@
 
 An implementation of [Gradual Typing for Functional Languages](http://scheme2006.cs.uchicago.edu/13-siek.pdf).
 
-I started writing this on [Internation Cat Day](https://en.wikipedia.org/wiki/International_Cat_Day) and decided to name the repo `meow` ;).
+I started writing this on [International Cat Day](https://en.wikipedia.org/wiki/International_Cat_Day) and decided to name the repo `meow` ;).
 
 Some meow-difications from the paper:
 - "meow", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾" are aliases for the `?` type
